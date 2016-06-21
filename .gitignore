@@ -5,3 +5,4 @@
 *.html
 *.pdf
 *.tif
+.DS_Store

@@ -1,0 +1,32 @@
+---
+title: "histogram_function_test"
+author: "Jon Weiner"
+date: "June 21, 2016"
+output: html_document
+---
+```{r}
+
+library(raster)
+
+data <- raster("../NEONdata/D17-California/TEAK/2013/lidar/TEAK_lidarCHM.tif")
+
+plot_chm_hist <- function(chm, title){
+  hist(chm, main = title, xlab = "Height (m)")
+}
+
+
+make_pdf <- function(expr, filename, ..., verbose = TRUE){
+  if (verbose){
+    message("Creating: ", filename)
+  }
+  pdf(file = filename, ...)
+  on.exit(dev.off())
+  eval.parent(substitute(expr))
+}
+
+make_pdf(plot_chm_hist(data, "TEAK histogram of heights"), filename = "TEAK_hist_chm.pdf")
+
+
+```
+
+
