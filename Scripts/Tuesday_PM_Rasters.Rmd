@@ -30,20 +30,59 @@ Import CHM and set zero values to NA
 #import TEAK CHM and set zero values to NA
 chm <- raster("../NEONdata/D17-California/TEAK/2013/lidar/TEAK_lidarCHM.tif")
 
+chosen_breaks = c(6, 30, 50, 100)
+
 chm[chm==0] <- NA
 ```
+
+```{r_cleaner_code}
+
+
+#Function to create a reclassify matrix from a set of breaks
+create_height_class_matrix <- function(breaks){
+  #get the length of the breaks vector to figure out how many classes we will have
+  br.len <- length(breaks)
+  
+  #initialize height class vector with 0
+  height.class.m <- c(0)
+  
+  #for input of breaks = c(6, 30, 50, 100)
+  # we would like something like this
+  #c(0, 6, 1, 
+  #  6, 30, 2, 
+  #  30, 50, 3, 
+  #  50, 100, 4)
+  for (i in 1:br.len){
+    height.class.m <- c(height.class.m, breaks[i-1], breaks[i], i)
+  }
+  reclass.height.mat <- matrix(height.class.m,
+                               ncol = 3, 
+                               byrow = TRUE)
+}
+
+create_height_class_matrix(chosen_breaks)
+
+#a function to plot density of heights with chosen breaks
+#expects a chm raster, a title, and vector of breaks
+
+plot_chm_density <- function(rast.in, title, bins){
+  density(rast.in, main = title, xlab = "Height (m)")
+  abline(v = bins, col = "red")
+}
+
+plot_chm_density(rast.in = chm, 
+                 title = "Canopy heights at Teakettle", 
+                 bins = chosen_breaks)
+```
+
+
+
+
 
 ### Classify and create histogram
 
 ```{r classify_CHM}
-#Set up classifications
-tree_class <- c(0, 20, 1, 
-                20, 40, 3, 
-                40, 60, 5)
-#Reshape matrix
-tree_matrix <- matrix(tree_class,
-                ncol = 3,
-                byrow = TRUE)
+
 #Classify dataset
 classified_trees <- reclassify(chm,
                                tree_matrix)
