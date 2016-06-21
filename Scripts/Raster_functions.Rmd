@@ -1,0 +1,86 @@
+---
+title: "Functionalizing Rasters from NEON"
+author: "Jon Weiner"
+date: "June 21, 2016"
+output: html_document
+---
+
+### Objectives
+
+1. Import a raster — A lidar canopy height model (lidar/Teak_lidarCHM.tif)
+1. For the CHM, set values == 0 to NA (not trees)
+1. Classify the raster according to some distribution – low medium and tall trees. This could be done using a histogram potentially or we could just decide that <2m is generally grasses / understory, <6m small trees,and the rest are tall trees. A function could import the desired thresholds. Visualize histogram/density and plot vertical cutoff lines.
+1. PLOT - layer the classified raster on top of the hillshade, add a legend for each “class” - legends are super tricky to simplifying this process with a function would be good.  see: http://neon-workwithdata.github.io/neon-data-institute-2016/R/classify-by-threshold-R/  for my take on forcing a legend outside of the plot area using par settings. You may have other better forms of magic to make this work well. :)
+1. Export the plot figure to a pdf – publishable
+1. Export the classified raster as a geotiff with NaFlagg = -9999 to an outputs folder.
+
+### Initialize dataset
+
+Import Libraries
+
+```{r import_libraries}
+#import libraries
+library(raster)
+library(rgdal)
+```
+
+Import CHM and set zero values to NA
+
+```{r import_CHM_and_0toNA}
+#import TEAK CHM and set zero values to NA
+chm <- raster("../NEONdata/D17-California/TEAK/2013/lidar/TEAK_lidarCHM.tif")
+
+chm[chm==0] <- NA
+```
+
+### Classify and create histogram
+
+```{r classify_CHM}
+#Set up classifications
+tree_class <- c(0, 20, 1, 
+                20, 40, 3, 
+                40, 60, 5)
+#Reshape matrix
+tree_matrix <- matrix(tree_class,
+                ncol = 3,
+                byrow = TRUE)
+#Classify dataset
+classified_trees <- reclassify(chm,
+                               tree_matrix)
+#Create Histogram of original data (with 0 == NA)
+pdf(file = "TEAK_CHM_density_with_breaks.pdf", width = 6, height = 7)
+
+par(xpd = FALSE)
+
+density(chm,
+     main = "TEAK_CHM_Histogram",
+     xlab = "Height (m)")
+
+abline(v = tree_matrix[, 2], col = "red")
+
+plot(classified_trees)
+```
+
+### Add legend 
+
+```{r create_legend}
+
+par(xpd = FALSE, mar=c(5.1, 4.1, 4.1, 4.5))
+# plot
+plot(classified_trees,
+     col=c("red","blue","green"), # hard code colors, unclassified (0)=white,
+		 #N (1) =blue, S(2)=green
+     main="North and South Facing Slopes \nLower Teakettle",
+     legend=F)
+# allow legend to plot outside of bounds
+par(xpd=TRUE)
+# create the legend
+legend((par()$usr[2] + 20), 4103300,  # set x,y legend location
+       legend = c("Low", "Medium", "High"),  # make sure the order matches the colors, next
+       fill = c("red", "blue", "green"),
+       bty="n") # turn off border
+
+```
+
+
+
