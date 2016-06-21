@@ -37,9 +37,9 @@ chm[chm==0] <- NA
 
 ```{r classify_CHM}
 #Set up classifications
-tree_class <- c(0, 2, 1, 
-                2, 6, 3, 
-                6, 56, 5)
+tree_class <- c(0, 20, 1, 
+                20, 40, 3, 
+                40, 60, 5)
 #Reshape matrix
 tree_matrix <- matrix(tree_class,
                 ncol = 3,
@@ -59,6 +59,26 @@ plot(classified_trees)
 ```
 
 ### Add legend 
+
+```{r create_legend}
+
+par(xpd = FALSE, mar=c(5.1, 4.1, 4.1, 4.5))
+# plot
+plot(classified_trees,
+     col=c("red","blue","green"), # hard code colors, unclassified (0)=white,
+		 #N (1) =blue, S(2)=green
+     main="North and South Facing Slopes \nLower Teakettle",
+     legend=F)
+# allow legend to plot outside of bounds
+par(xpd=TRUE)
+# create the legend
+legend((par()$usr[2] + 20), 4103300,  # set x,y legend location
+       legend = c("Low", "Medium", "High"),  # make sure the order matches the colors, next
+       fill = c("red", "blue", "green"),
+       bty="n") # turn off border
+
+```
+
 
 
 
